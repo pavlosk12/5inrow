@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>5 в ряд</title>
+<style>
+body{font-family:Arial, sans-serif;text-align:center;background:#f0f0f0;margin:0;padding:10px}
+#board{display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);gap:2px;width:min(90vmin,600px);height:min(90vmin,600px);margin:20px auto}
+.cell{background:white;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:clamp(12px,2.5vmin,22px);cursor:pointer}
+#status{margin-top:10px;font-size:18px}
+button{margin-top:10px;padding:8px 16px;font-size:16px}
+</style>
+</head>
+<body>
+<h1>Гра "5 в ряд"</h1>
+<div id="board"></div>
+<div id="status">Хід: X</div>
+<button onclick="resetGame()">Почати заново</button>
+
+<script>
+const size = 15;
+let board = [];
+let current = 'X';
+let gameOver = false;
+
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+
+function createBoard(){
+  boardEl.innerHTML='';
+  board=[];
+  for(let y=0;y<size;y++){
+    board[y]=[];
+    for(let x=0;x<size;x++){
+      board[y][x]='';
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.dataset.x=x;
+      cell.dataset.y=y;
+      cell.addEventListener('click',handleMove);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function handleMove(e){
+  if(gameOver) return;
+  const x=+e.target.dataset.x;
+  const y=+e.target.dataset.y;
+  if(board[y][x]) return;
+
+  board[y][x]=current;
+  e.target.textContent=current;
+
+  if(checkWin(x,y)){
+    statusEl.textContent='Переміг: '+current;
+    gameOver=true;
+    return;
+  }
+
+  current=current==='X'?'O':'X';
+  statusEl.textContent='Хід: '+current;
+}
+
+function checkDir(x,y,dx,dy){
+  let count=1;
+
+  for(let i=1;i<5;i++){
+    const nx=x+dx*i;
+    const ny=y+dy*i;
+    if(board[ny]?.[nx]===current) count++;
+    else break;
+  }
+
+  for(let i=1;i<5;i++){
+    const nx=x-dx*i;
+    const ny=y-dy*i;
+    if(board[ny]?.[nx]===current) count++;
+    else break;
+  }
+
+  return count>=5;
+}
+
+function checkWin(x,y){
+  return (
+    checkDir(x,y,1,0) ||
+    checkDir(x,y,0,1) ||
+    checkDir(x,y,1,1) ||
+    checkDir(x,y,1,-1)
+  );
+}
+
+function resetGame(){
+  current='X';
+  gameOver=false;
+  statusEl.textContent='Хід: X';
+  createBoard();
+}
+
+createBoard();
+</script>
+</body>
+</html>
